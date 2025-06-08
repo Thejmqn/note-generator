@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 
 NOTE_NUM = 2
 IMAGE_TYPES = ["jpg", "png", "gif", "webp", "svg"]
@@ -15,6 +16,64 @@ def get_images(directory):
 def open_file():
     f = open("Note" + str(NOTE_NUM) + ".jsx", "w", encoding="utf-8")
     return f
+
+def get_link(text):
+    link = ""
+    add_text = False
+    for char in text:
+        if char == ")":
+            return link
+        if add_text:
+            link += char
+        if char == "(":
+            add_text = True
+    return link
+
+
+def style_phrase(line):
+    open_tag = False
+    write_text = True
+    format_line = ""
+    for i, char in enumerate(line):
+        match char:
+            case "*":
+                if open_tag:
+                    format_line += "</i>"
+                    open_tag = False
+                else:
+                    format_line += "<i>"
+                    open_tag = True
+            case "`":
+                if open_tag:
+                    format_line += "</code>"
+                    open_tag = False
+                else:
+                    format_line += "<code>"
+                    open_tag = True
+            case "\"" | "“" | "”":
+                if open_tag:
+                    format_line += "</q>"
+                    open_tag = False
+                else:
+                    format_line += "<q>"
+                    open_tag = True
+            case "[":
+                open_tag = True
+                link = get_link(line[i:])
+                format_line += "<a href=\"" + link + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+            case "]":
+                format_line += "</a>"
+            case "(" if open_tag:
+                write_text = False
+            case ")" if open_tag:
+                write_text = True
+                open_tag = False
+            case "|":
+                write_text = not write_text
+            case _:
+                if write_text:
+                    format_line += char
+    return format_line
 
 def main():
     images = get_images(r'C:\Users\jav3fh\Programming\personal-site\src\notes\0')
@@ -50,6 +109,7 @@ import './../notes_page.css';\n""")
             case _:
                 if line[0] == "\t":
                     line = line[1:]
+                line = style_phrase(line)
                 f.write("        <p>" + line.strip() + "</p>\n")
 
     f.write("""
