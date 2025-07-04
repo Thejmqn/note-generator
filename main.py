@@ -2,7 +2,7 @@ import os
 from enum import Enum
 import re
 
-NOTE_NUM = 2
+NOTE_NUM = 3
 IMAGE_TYPES = ["jpg", "png", "gif", "webp", "svg"]
 
 def get_images(directory):
@@ -94,8 +94,8 @@ import './../notes_page.css';\n""")
     f.write("""
     const note = notes_list[noteIndex];
     if (!note) return <div className="note-container">Note not found.</div>;
-    const prevNote = notes_list[noteIndex + 1];
-    const nextNote = notes_list[noteIndex - 1];
+    const prevNote = notes_list[noteIndex - 1];
+    const nextNote = notes_list[noteIndex + 1];
     
     return (
     <div className="note-container">
@@ -130,8 +130,8 @@ import './../notes_page.css';\n""")
 
     f.write("""
         <div className="note-nav">
-            {prevNote && <Link to={prevNote.link} className="note-nav-link">← {prevNote.title}</Link>}
-            {nextNote && <Link to={nextNote.link} className="note-nav-link">{nextNote.title} →</Link>}
+            {prevNote && <Link to={`${window.location.pathname}/../${nextNote.link}`} className="note-nav-link">← {nextNote.title}</Link>}
+            {nextNote && <Link to={`${window.location.pathname}/../${prevNote.link}`} className="note-nav-link">{prevNote.title} →</Link>}
         </div>
     </div>
     );
