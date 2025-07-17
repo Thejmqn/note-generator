@@ -2,8 +2,9 @@ import os
 from enum import Enum
 import re
 
-NOTE_NUM = 3
+NOTE_NUM = 4
 IMAGE_TYPES = ["jpg", "png", "gif", "webp", "svg"]
+
 
 def get_images(directory):
     files = os.listdir(directory)
@@ -16,9 +17,11 @@ def get_images(directory):
         images[i] = re.findall(r'(?<=[\\/])[^\\/]+$', image)[0]
     return images
 
+
 def open_file():
     f = open("Note" + str(NOTE_NUM) + ".jsx", "w", encoding="utf-8")
     return f
+
 
 def get_link(text):
     link = ""
@@ -31,6 +34,7 @@ def get_link(text):
         if char == "(":
             add_text = True
     return link
+
 
 # TODO: Update for regexes
 def style_phrase(line):
@@ -53,7 +57,7 @@ def style_phrase(line):
                 else:
                     format_line += "<code>"
                     open_tag = True
-            case "\"" | "“" | "”":
+            case "\"" | """ | """:
                 if open_tag:
                     format_line += "</q>"
                     open_tag = False
@@ -78,6 +82,17 @@ def style_phrase(line):
                     format_line += char
     return format_line
 
+
+def is_ordered_list_item(line):
+    """Check if a line is an ordered list item (starts with number followed by period and space)"""
+    return re.match(r'^\d+\.\s', line) is not None
+
+
+def get_list_item_content(line):
+    """Extract the content of a list item (everything after the number and period)"""
+    return re.sub(r'^\d+\.\s', '', line)
+
+
 def main():
     images = get_images(r'C:\Users\jav3fh\Programming\personal-site\src\notes\\' + str(NOTE_NUM))
     print(images)
@@ -96,7 +111,7 @@ import './../notes_page.css';\n""")
     if (!note) return <div className="note-container">Note not found.</div>;
     const prevNote = notes_list[noteIndex - 1];
     const nextNote = notes_list[noteIndex + 1];
-    
+
     return (
     <div className="note-container">
         <Link to="/notes" className="back-link">← Back to Notes</Link>
@@ -106,10 +121,34 @@ import './../notes_page.css';\n""")
 
     r = open("test.md", "r", encoding="utf-8")
     raw = r.read().split("\n")
-    raw.pop(0) # remove header
-    for line in raw:
+    raw.pop(0)  # remove header
+
+    i = 0
+    while i < len(raw):
+        line = raw[i]
         if len(line) < 1:
+            i += 1
             continue
+
+        # Check if this line starts an ordered list
+        if is_ordered_list_item(line):
+            # Start the ordered list
+            f.write('        <ol className="note-list">\n')
+
+            # Process all consecutive list items
+            while i < len(raw) and is_ordered_list_item(raw[i]):
+                list_content = get_list_item_content(raw[i])
+                if raw[i].startswith("\t"):
+                    list_content = list_content[1:]
+                list_content = style_phrase(list_content)
+                f.write('            <li className="list-element">' + list_content.strip() + '</li>\n')
+                i += 1
+
+            # Close the ordered list
+            f.write('        </ol>\n')
+            continue
+
+        # Handle other line types as before
         match line[0]:
             case "#":
                 f.write("        <h2>" + line[2:] + "</h2>\n")
@@ -120,13 +159,16 @@ import './../notes_page.css';\n""")
                 f.write("""        <figure className="note-figure">
             <img src={""" + image + "} alt=\"" + caption + "\" className=\"note-inline-image\" />\n")
                 f.write("            <figcaption>" + caption + "</figcaption>\n")
-                f.write("""            <span className="image-source">Source: <a href='""" + source + """' target="_blank" rel="noopener noreferrer">Wikipedia</a></span>\n""")
+                f.write(
+                    """            <span className="image-source">Source: <a href='""" + source + """' target="_blank" rel="noopener noreferrer">Wikipedia</a></span>\n""")
                 f.write("        </figure>\n")
             case _:
                 if line[0] == "\t":
                     line = line[1:]
                 line = style_phrase(line)
                 f.write("        <p>" + line.strip() + "</p>\n")
+
+        i += 1
 
     f.write("""
         <div className="note-nav">
@@ -138,6 +180,7 @@ import './../notes_page.css';\n""")
 }\n""")
     f.close()
     r.close()
+
 
 if __name__ == "__main__":
     main()
