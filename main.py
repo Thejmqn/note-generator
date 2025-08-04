@@ -2,7 +2,7 @@ import os
 from enum import Enum
 import re
 
-NOTE_NUM = 4
+NOTE_NUM = 5
 IMAGE_TYPES = ["jpg", "png", "gif", "webp", "svg"]
 
 
@@ -160,7 +160,7 @@ import './../notes_page.css';\n""")
             <img src={""" + image + "} alt=\"" + caption + "\" className=\"note-inline-image\" />\n")
                 f.write("            <figcaption>" + caption + "</figcaption>\n")
                 f.write(
-                    """            <span className="image-source">Source: <a href='""" + source + """' target="_blank" rel="noopener noreferrer">Wikipedia</a></span>\n""")
+                    """            <span className="image-source"><a href='""" + source + """' target="_blank" rel="noopener noreferrer">Source</a></span>\n""")
                 f.write("        </figure>\n")
             case _:
                 if line[0] == "\t":
